@@ -12,11 +12,11 @@ Param (
         [String]
         $entrada,
         [ValidateNotNull()]
-        [parameter(ParameterSetName="Producto",Mandatory=$true)]
-        [int]
+        [parameter(ParameterSetName="Producto",Mandatory=$true, Position = 2)]
+        [double]
         $producto,
         [ValidateNotNullOrEmpty()]
-        [parameter(ParameterSetName="Suma", Mandatory=$true)]
+        [parameter(ParameterSetName="Suma", Mandatory=$true, Position = 2)]
         [String]
         $suma
         )
@@ -149,7 +149,7 @@ switch($PSBoundParameters.Keys){
                 Write-Host "Aún no se epsecificó la matriz original"
                 exit 1
             }
-            $matrizProducto,$filP,$colP = productoMatriz $matrizOriginal,$fil,$col,$producto
+            $matrizProducto,$filP,$colP = productoMatriz $matrizOriginal $fil $col $producto
             escribirMatriz "$directorioScript\salida.$nombreArchivo" $matrizProducto $filP $colP
     }
     "suma"{
