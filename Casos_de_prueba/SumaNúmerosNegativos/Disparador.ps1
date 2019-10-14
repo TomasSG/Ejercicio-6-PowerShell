@@ -1,0 +1,1 @@
+﻿..\..\Ejercicio6.ps1 -entrada "..\matrizPrueba.txt" -suma ".\matrizSumaNúmerosNegativos.txt"
