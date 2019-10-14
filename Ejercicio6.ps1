@@ -1,19 +1,18 @@
 ﻿
 
 
+[cmdletbinding(DefaultParameterSetName="Suma")]
 
-[cmdletbinding(DefaultParameterSetName="Entrada")]
 
 Param (
         [ValidateNotNullOrEmpty()]
-        [parameter(ParameterSetName="Entrada", Mandatory=$true , Position = 1)]
-        [parameter(ParameterSetName="Producto", Mandatory=$false, Position = 1)]
-        [parameter(ParameterSetName="Suma", Mandatory=$false, Position = 1)]
+        [parameter(ParameterSetName="Producto", Mandatory=$true, Position = 1)]
+        [parameter(ParameterSetName="Suma", Mandatory=$true, Position = 1)]
         [String]
         $entrada,
         [ValidateNotNull()]
         [parameter(ParameterSetName="Producto",Mandatory=$true, Position = 2)]
-        [double]
+        [int]
         $producto,
         [ValidateNotNullOrEmpty()]
         [parameter(ParameterSetName="Suma", Mandatory=$true, Position = 2)]
@@ -120,7 +119,7 @@ function sumarMatrices($matriz1,[int] $fil1, [int] $col1, $matriz2, [int] $fil2,
    $col --> Cantidad de columnas de la matriz
    $escalar --> El escalar con el cual se realiza el producto escalar
 #>
-function productoMatriz($matriz, [int] $fil, [int] $col, [double] $escalar){
+function productoMatriz($matriz, [int] $fil, [int] $col, [int] $escalar){
     $matRes = New-Object 'Object[,]' $fil,$col
     foreach ( $i in 0..($fil -1 ) ){
         foreach ($j in 0..($col - 1) ){
@@ -133,42 +132,37 @@ function productoMatriz($matriz, [int] $fil, [int] $col, [double] $escalar){
 
 
 $directorioScript=$(Get-Location)
+if ( Test-Path "$entrada" -PathType Leaf  ) {
+    $vecAux=$entrada.Split("\")
+    $nombreArchivo=$vecAux[$vecAux.Count - 1]
+    $matrizOriginal,$fil,$col = cargarMatriz $entrada
+} else {
+    Write-Host "La dirección '$entrada' no corresponde a un fichero válido"
+    exit 0
+}
 switch($PSBoundParameters.Keys){
-    "entrada"{
-            if ( Test-Path "$entrada" -PathType Leaf  ) {
-                $vecAux=$entrada.Split("\")
-                $nombreArchivo=$vecAux[$vecAux.Count - 1]
-                $matrizOriginal,$fil,$col = cargarMatriz $entrada
-            } else {
-                Write-Host "La dirección '$entrada' no corresponde a un fichero válido"
-                exit 1
-            }    
-    }
-    "producto"{
-            if ( ! $matrizOriginal ){
-                Write-Host "Aún no se epsecificó la matriz original"
-                exit 1
-            }
+     "producto"{
             $matrizProducto,$filP,$colP = productoMatriz $matrizOriginal $fil $col $producto
             escribirMatriz "$directorioScript\salida.$nombreArchivo" $matrizProducto $filP $colP
+            exit 1
     }
     "suma"{
             if ( Test-Path "$suma" -PathType Leaf  ) {
-                if ( ! $matrizOriginal ) {
-                    Write-Host "Aún no se especificó la matriz original"
-                    exit 1
-                }
                 $matrizSuma,$filS,$colS = cargarMatriz $suma
                 if( ! $filS -eq $fil -and ! $colS -eq $col ) {
                     Write-Host "Las dimensiones de las matrices no coinciden"
-                    exit 1
+                    exit 0
                 }
                 $matrizResultado,$filR,$colR = sumarMatrices $matrizOriginal $fil $col $matrizSuma $filS $colS 
                 escribirMatriz "$directorioScript\salida.$nombreArchivo" $matrizResultado $filR $colR
+                exit 1
             } else {
                 Write-Host "La dirección '$suma' no corresponde a un fichero válido"
-                exit 1
+                exit 0
             }
+    }
+    default{
+        continue
     }
 
 }
