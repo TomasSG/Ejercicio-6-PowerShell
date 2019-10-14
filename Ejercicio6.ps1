@@ -3,12 +3,16 @@
     Permita realizar producto escalar y suma de matrices. La entrada de la matriz al script se realizará mediante un archivo de texto plano. 
     La salida se guardará en otro archivo que se llamará “salida.nombreArchivoEntrada” en el mismo directorio donde se encuentra el script
 .DESCRIPTION
-    Integrantes:
-    Giselle González - 41292355
-    Tomas Grigioni - 41589109
-    Alan Rossi - 37250221
-    Lautaro Costa - 36396983
-    Diego Stanko - 39372117
+    *Nombre Script: Ejercicio6.ps1
+    *Trabajo Práctico nro: 2
+    *Ejercicio nro: 6
+    *Integrantes:
+        .Giselle González - 41292355
+        .Tomas Grigioni - 41589109
+        .Alan Rossi - 37250221
+        .Lautaro Costa - 36396983
+        .Diego Stanko - 39372117
+    *Primera entrega
 
 .PARAMETER Entrada
     Path del archivo donde esta cargada la matriz.
@@ -16,6 +20,8 @@
     Entero para realizar el producto escalar con la matriz especificada en -Entrada. No se puede usar con -Suma
 .PARAMETER Suma
     Path del archivo de la matriz a sumar a la indicada en -Enrada. No se puede usarjunto con -Producto
+.PARAMETER Help
+    Cuando se lo explicitad se indica el número de versióny las formasde llamar al script
 
 .EXAMPLE
     Ejercicio6.ps1 -Entrada .\matrizEjemplo.txt -Suma .\matrizEjemploSuma.txt
@@ -39,7 +45,10 @@ Param (
         [ValidateNotNullOrEmpty()]
         [parameter(ParameterSetName="Suma", Mandatory=$true, Position = 2)]
         [String]
-        $suma
+        $suma,
+        [parameter(ParameterSetName="Ayuda", Mandatory=$true, Position=1)]
+        [switch]
+        $help
         )
 
 
@@ -168,21 +177,24 @@ function productoMatriz($matriz, [int] $fil, [int] $col, [int] $escalar){
 
 
 $directorioScript=$(Get-Location)
-if ( Test-Path "$entrada" -PathType Leaf  ) {
-    $vecAux=$entrada.Split("\")
-    $nombreArchivo=$vecAux[$vecAux.Count - 1]
-    $matrizOriginal,$fil,$col = cargarMatriz $entrada
-} else {
-    Write-Host "La dirección '$entrada' no corresponde a un fichero válido"
-    exit 0
-}
+
 switch($PSBoundParameters.Keys){
+
      "producto"{
+            if(! $matrizOriginal ){
+                Write-Host "Pimero se debe especificar -entrada"
+                exit 0
+            }
             $matrizProducto,$filP,$colP = productoMatriz $matrizOriginal $fil $col $producto
             escribirMatriz "$directorioScript\salida.$nombreArchivo" $matrizProducto $filP $colP
             exit 1
     }
+
     "suma"{
+            if(! $matrizOriginal ){
+                Write-Host "Pimero se debe especificar -entrada"
+                exit 0
+            }
             if ( Test-Path "$suma" -PathType Leaf  ) {
                 $matrizSuma,$filS,$colS = cargarMatriz $suma
                 if( ! $filS -eq $fil -and ! $colS -eq $col ) {
@@ -197,8 +209,32 @@ switch($PSBoundParameters.Keys){
                 exit 0
             }
     }
+
+    "help"{
+        Write-Host "Numero de versión : 1.0"
+        Write-Host "Ejemplo de llamadas:"
+        Write-Host "1) Suma: .\Ejercicio6.ps1 -Entrada .\matrizEjemplo1.txt -Suma \matrizEjemploSuma1.txt"
+        Write-Host "2) Producto: .\Ejercicio6.ps1 -Entrada .\matrizEjemplo1.txt -Producto 3"
+        exit 1
+    }
+
+    "entrada"{
+        if ( Test-Path "$entrada" -PathType Leaf  ) {
+            $vecAux=$entrada.Split("\")
+            $nombreArchivo=$vecAux[$vecAux.Count - 1]
+            $matrizOriginal,$fil,$col = cargarMatriz $entrada
+        } else {
+            Write-Host "La dirección '$entrada' no corresponde a un fichero válido"
+            exit 0
+        }
+    }
+
     default{
-        continue
+        Write-Host "Error en llamada!"
+        Write-Host "Usos:"
+        Write-Host "1) Suma: .\Ejercicio6.ps1 -Entrada .\matrizEjemplo1.txt -Suma \matrizEjemploSuma1.txt"
+        Write-Host "2) Producto: .\Ejercicio6.ps1 -Entrada .\matrizEjemplo1.txt -Producto 3"
+        exit 0
     }
 
 }
