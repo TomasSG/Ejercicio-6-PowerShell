@@ -176,8 +176,8 @@ function productoMatriz($matriz, [int] $fil, [int] $col, [int] $escalar){
 
 
 
-$directorioScript=$(Get-Location)
-
+#$directorioScript=$(Get-Location)
+$directorioScript= $($MyInvocation.MyCommand.path | Split-path)
 switch($PSBoundParameters.Keys){
 
      "producto"{
@@ -197,7 +197,7 @@ switch($PSBoundParameters.Keys){
             }
             if ( Test-Path "$suma" -PathType Leaf  ) {
                 $matrizSuma,$filS,$colS = cargarMatriz $suma
-                if( ! $filS -eq $fil -and ! $colS -eq $col ) {
+                if(  $filS -ne $fil -or $colS -ne $col ) {
                     Write-Host "Las dimensiones de las matrices no coinciden"
                     exit 0
                 }
