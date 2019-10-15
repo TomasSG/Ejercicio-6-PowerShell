@@ -34,19 +34,19 @@
 
 Param (
         [ValidateNotNullOrEmpty()]
-        [parameter(ParameterSetName="Producto", Mandatory=$true, Position = 1)]
-        [parameter(ParameterSetName="Suma", Mandatory=$true, Position = 1)]
+        [parameter(ParameterSetName="Producto", Mandatory=$true, Position = 0)]
+        [parameter(ParameterSetName="Suma", Mandatory=$true, Position = 0)]
         [String]
         $entrada,
         [ValidateNotNull()]
-        [parameter(ParameterSetName="Producto",Mandatory=$true, Position = 2)]
+        [parameter(ParameterSetName="Producto",Mandatory=$true, Position = 1)]
         [int]
         $producto,
         [ValidateNotNullOrEmpty()]
-        [parameter(ParameterSetName="Suma", Mandatory=$true, Position = 2)]
+        [parameter(ParameterSetName="Suma", Mandatory=$true, Position = 1)]
         [String]
         $suma,
-        [parameter(ParameterSetName="Ayuda", Mandatory=$true, Position=1)]
+        [parameter(ParameterSetName="Ayuda", Mandatory=$true, Position=0)]
         [switch]
         $help
         )
@@ -174,70 +174,64 @@ function productoMatriz($matriz, [int] $fil, [int] $col, [int] $escalar){
     return $matRes,$fil,$col
 }
 
-
-
-#$directorioScript=$(Get-Location)
 $directorioScript= $($MyInvocation.MyCommand.path | Split-path)
-switch($PSBoundParameters.Keys){
 
-     "producto"{
-            if(! $matrizOriginal ){
-                Write-Host "Pimero se debe especificar -entrada"
-                exit 0
-            }
-            $matrizProducto,$filP,$colP = productoMatriz $matrizOriginal $fil $col $producto
-            escribirMatriz "$directorioScript\salida.$nombreArchivo" $matrizProducto $filP $colP
-            exit 1
+if ($help.IsPresent){
+    Write-Host "Numero de versión : 1.0"
+    Write-Host "Ejemplo de llamadas:"
+    Write-Host "1) Suma: .\Ejercicio6.ps1 -Entrada .\matrizEjemplo1.txt -Suma \matrizEjemploSuma1.txt"
+    Write-Host "2) Producto: .\Ejercicio6.ps1 -Entrada .\matrizEjemplo1.txt -Producto 3"
+    exit 1
+}
+
+if($PSBoundParameters.ContainsKey("entrada") ){
+    if ( Test-Path "$entrada" -PathType Leaf  ) {
+        $vecAux=$entrada.Split("\")
+        $nombreArchivo=$vecAux[$vecAux.Count - 1]
+        $matrizOriginal,$fil,$col = cargarMatriz $entrada
+    } else {
+        Write-Host "La dirección '$entrada' no corresponde a un fichero válido"
+        exit 0
     }
+}
 
-    "suma"{
-            if(! $matrizOriginal ){
-                Write-Host "Pimero se debe especificar -entrada"
+if( $PSBoundParameters.ContainsKey("suma") ){
+
+    if(! $matrizOriginal ){
+                Write-Host "No se especifico una matriz en -Entrada"
                 exit 0
-            }
-            if ( Test-Path "$suma" -PathType Leaf  ) {
-                $matrizSuma,$filS,$colS = cargarMatriz $suma
-                if(  $filS -ne $fil -or $colS -ne $col ) {
-                    Write-Host "Las dimensiones de las matrices no coinciden"
-                    exit 0
-                }
-                $matrizResultado,$filR,$colR = sumarMatrices $matrizOriginal $fil $col $matrizSuma $filS $colS 
-                escribirMatriz "$directorioScript\salida.$nombreArchivo" $matrizResultado $filR $colR
-                exit 1
-            } else {
-                Write-Host "La dirección '$suma' no corresponde a un fichero válido"
-                exit 0
-            }
     }
-
-    "help"{
-        Write-Host "Numero de versión : 1.0"
-        Write-Host "Ejemplo de llamadas:"
-        Write-Host "1) Suma: .\Ejercicio6.ps1 -Entrada .\matrizEjemplo1.txt -Suma \matrizEjemploSuma1.txt"
-        Write-Host "2) Producto: .\Ejercicio6.ps1 -Entrada .\matrizEjemplo1.txt -Producto 3"
-        exit 1
-    }
-
-    "entrada"{
-        if ( Test-Path "$entrada" -PathType Leaf  ) {
-            $vecAux=$entrada.Split("\")
-            $nombreArchivo=$vecAux[$vecAux.Count - 1]
-            $matrizOriginal,$fil,$col = cargarMatriz $entrada
-        } else {
-            Write-Host "La dirección '$entrada' no corresponde a un fichero válido"
+    if ( Test-Path "$suma" -PathType Leaf  ) {
+        $matrizSuma,$filS,$colS = cargarMatriz $suma
+        if(  $filS -ne $fil -or $colS -ne $col ) {
+            Write-Host "Las dimensiones de las matrices no coinciden"
             exit 0
         }
-    }
-
-    default{
-        Write-Host "Error en llamada!"
-        Write-Host "Usos:"
-        Write-Host "1) Suma: .\Ejercicio6.ps1 -Entrada .\matrizEjemplo1.txt -Suma \matrizEjemploSuma1.txt"
-        Write-Host "2) Producto: .\Ejercicio6.ps1 -Entrada .\matrizEjemplo1.txt -Producto 3"
+        $matrizResultado,$filR,$colR = sumarMatrices $matrizOriginal $fil $col $matrizSuma $filS $colS 
+        escribirMatriz "$directorioScript\salida.$nombreArchivo" $matrizResultado $filR $colR
+        exit 1
+    } else {
+        Write-Host "La dirección '$suma' no corresponde a un fichero válido"
         exit 0
     }
 
+} elseif ( $PSBoundParameters.ContainsKey("producto") ){
+    if(! $matrizOriginal ){
+                Write-Host "No se especifico una matriz en -Entrada"
+                exit 0
+            }
+    $matrizProducto,$filP,$colP = productoMatriz $matrizOriginal $fil $col $producto
+    escribirMatriz "$directorioScript\salida.$nombreArchivo" $matrizProducto $filP $colP
+    exit 1
 }
+
+Write-Host "Error en llamada!"
+Write-Host "Usos:"
+Write-Host "1) Suma: .\Ejercicio6.ps1 -Entrada .\matrizEjemplo1.txt -Suma \matrizEjemploSuma1.txt"
+Write-Host "2) Producto: .\Ejercicio6.ps1 -Entrada .\matrizEjemplo1.txt -Producto 3"
+exit 0
+
+
 
 
                 
